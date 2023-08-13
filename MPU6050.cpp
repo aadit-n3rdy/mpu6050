@@ -4,6 +4,8 @@
 
 #define ACCEL_CONFIG_ADDR	0x1C
 #define GYRO_CONFIG_ADDR	0x1B
+#define POWER_MGMT_1_ADDR	0x6B
+#define POWER_MGMT_2_ADDR	0x6C
 
 #define ACCEL_VALUE_ADDR	0x3B
 #define GYRO_VALUE_ADDR		0x43
@@ -18,30 +20,62 @@ namespace MPU6050 {
 		gyroRange = GyroRange::_250dS;
 	}
 
+	void MPU6050::reset() {
+		wire->beginTransmission(addr);
+		wire->write(POWER_MGMT_1_ADDR);
+		wire->write((char)(1<<7));
+		wire->endTransmission();
+
+		// Wait to finish RESET
+		char done = 0;
+		while (!done) {
+			wire->beginTransmission(addr);
+			wire->write(POWER_MGMT_1_ADDR);
+			wire->endTransmission();
+			wire->requestFrom(addr, 1);
+			char c = wire->read();
+			if (!(c & (1<<7))) {
+				done = 1;
+			} else {
+				delay(10);
+			}
+		}
+
+		delay(10);
+
+		// Disable sleep, and set clock src to X Gyro PLL
+		wire->beginTransmission(addr);
+		wire->write(POWER_MGMT_1_ADDR);
+		wire->write((uint8_t)0x01);
+		wire->endTransmission();
+
+		setDefault();
+	}
+
 	void MPU6050::begin() {
 		wire = &Wire;
 		wire->begin();
 		addr = MPU6050_DEFAULT_ADDR;
-		setDefault();
+		reset();
 	}
 
 	void MPU6050::begin(uint8_t mpuAddr) {
 		wire = &Wire;
 		wire->begin();
 		addr = mpuAddr;
-		setDefault();
+		reset();
 	}
 
 	void MPU6050::begin(TwoWire& twoWire) {
 		wire = &twoWire;
 		addr = MPU6050_DEFAULT_ADDR;
-		setDefault();
+		reset();
 	}
 
 	void MPU6050::begin(TwoWire& twoWire, uint8_t mpuAddr) {
 		wire = &twoWire;
 		addr = mpuAddr;
-		setDefault();
+		reset();
 	}
 
 	

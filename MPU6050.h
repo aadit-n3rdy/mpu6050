@@ -37,6 +37,7 @@ namespace MPU6050 {
 			void begin(uint8_t mpuAddr);
 			void begin(TwoWire& twoWire);
 			void begin(TwoWire& twoWire, uint8_t mpuAddr);
+			void reset();
 
 			void setAccelRange(AccelRange range);
 			int getAccel(double* out); 
