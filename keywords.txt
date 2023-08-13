@@ -1,0 +1,6 @@
+MPU6050 KEYWORD1
+begin KEYWORD2
+setAccelRange KEYWORD2
+setGyroRange KEYWORD2
+getAccel KEYWORD2
+getGyro KEYWORD2
